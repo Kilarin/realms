@@ -101,9 +101,9 @@ function gen_realms(chunk_minp, chunk_maxp, seed)
 	for r=rstart,realm.count,1 do
 		parms=realm[r].parms
 		if luautils.check_overlap(parms.realm_minp, parms.realm_maxp, chunk_minp,chunk_maxp)==true then
-			minetest.log("realms-> gen_realms r="..r.." rmg="..luautils.var_or_nil(realm[r].rmg)..
-					" realm minp="..luautils.pos_to_str(parms.realm_minp).." maxp="..luautils.pos_to_str(parms.realm_maxp))
-			minetest.log("     surfacey="..parms.surfacey.." chunk minp="..luautils.pos_to_str(chunk_minp).." maxp="..luautils.pos_to_str(chunk_maxp))
+			--minetest.log("realms-> gen_realms r="..r.." rmg="..luautils.var_or_nil(realm[r].rmg)..
+			--		" realm minp="..luautils.pos_to_str(parms.realm_minp).." maxp="..luautils.pos_to_str(parms.realm_maxp))
+			--minetest.log("     surfacey="..parms.surfacey.." chunk minp="..luautils.pos_to_str(chunk_minp).." maxp="..luautils.pos_to_str(chunk_maxp))
 			
 			--rmg[realm[r].rmg](realm[r].parms.realm_minp,realm[r].parms.realm_maxp, realm[r].parms.surfacey, chunk_minp,chunk_maxp, 0)
 			parms.chunk_minp=chunk_minp

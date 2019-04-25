@@ -28,14 +28,14 @@ function gen_tg_very_simple(parms)
 	--we dont check for overlap because this will ONLY be called where there is an overlap
 	local t1 = os.clock()
 
-	minetest.log("gen_tg_very_simple-> realm minp="..luautils.pos_to_str(parms.realm_minp).." maxp="..luautils.pos_to_str(parms.realm_maxp)..
-	" chunk minp="..luautils.pos_to_str(parms.chunk_minp).." maxp="..luautils.pos_to_str(parms.chunk_maxp))
-	minetest.log("    intersection minp="..luautils.pos_to_str(parms.isect_minp).." maxp="..luautils.pos_to_str(parms.isect_maxp).." surfacey="..parms.surfacey)
+	--minetest.log("gen_tg_very_simple-> realm minp="..luautils.pos_to_str(parms.realm_minp).." maxp="..luautils.pos_to_str(parms.realm_maxp)..
+	--" chunk minp="..luautils.pos_to_str(parms.chunk_minp).." maxp="..luautils.pos_to_str(parms.chunk_maxp))
+	--minetest.log("    intersection minp="..luautils.pos_to_str(parms.isect_minp).." maxp="..luautils.pos_to_str(parms.isect_maxp).." surfacey="..parms.surfacey)
 
 	--get noise details
 	local isectsize = luautils.box_sizexz(parms.isect_minp,parms.isect_maxp)
 	local minposxz = {x=parms.isect_minp.x, y=parms.isect_minp.z}
-	minetest.log("gen_tg_very_simple-> isectsize="..luautils.pos_to_str(isectsize).." minposxz x="..minposxz.x.." y="..minposxz.y)
+	--minetest.log("gen_tg_very_simple-> isectsize="..luautils.pos_to_str(isectsize).." minposxz x="..minposxz.x.." y="..minposxz.y)
 
 	--we calculate the surface top and bot first
 	--because we need to loop through the voxels in z,y,x order for efficency
