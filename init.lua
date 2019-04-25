@@ -113,6 +113,7 @@ function gen_realms(chunk_minp, chunk_maxp, seed)
 			parms.area=area
 			parms.data=data 
 			parms.vm=vm  --I dont know if the map gen needs this, but just in case, there it is.
+			parms.seed=seed
 			rmg[realm[r].rmg](parms)
 			share=parms.share --save share to be used in next parms (user might have changed pointer)
 		end --if overlap

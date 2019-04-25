@@ -1,4 +1,4 @@
---this was inspired by and takes some snippets of code from
+--this was inspired by and takes some code from
 --https://github.com/SmallJoker/noisetest WTFPL License
 
 
@@ -6,7 +6,8 @@ local c_air = minetest.get_content_id("air")
 local c_stone = minetest.get_content_id("default:stone")
 local c_dirt = minetest.get_content_id("default:dirt")
 
-local c_snow = minetest.get_content_id("default:snow")                                   --arctic (no trees)
+--local c_snow = minetest.get_content_id("default:snow")                                   --arctic (no trees)
+local c_ice = minetest.get_content_id("default:ice")                                     --arctic (no trees)
 local c_dirt_snow = minetest.get_content_id("default:dirt_with_snow")                    --cold   (pine trees)
 local c_grass = minetest.get_content_id("default:dirt_with_grass")                       --warm   (trees)
 local c_dirt_rainforest = minetest.get_content_id("default:dirt_with_rainforest_litter") --hot    (jungle trees)
@@ -22,10 +23,10 @@ local c_ptree  =minetest.get_content_id("default:pine_tree")
 local c_pleaves=minetest.get_content_id("default:pine_needles")
 
 local heat_params={}
-heat_params.arctic=-6.4
-heat_params.cold  =-4.0
-heat_params.warm  = 4.0
-heat_params.hot   = 6.4
+heat_params.arctic=-6.0
+heat_params.cold  =-3.0
+heat_params.warm  = 2.0
+heat_params.hot   = 5.0
 --heat_params.desert=   
 local biomes = {ARCTIC=1, COLD=2, WARM=3, HOT=4, DESERT=5}
 
@@ -95,16 +96,74 @@ function gen_jungletree(x, y, z, area, data)
 end
 
 
+function place_material(x,y,z, area, data, material)
+	local vi = area:index(x, y, z)
+	data[vi] = material
+end --place mateiral
+
+--  m
+-- mxm   x=location xyz which is NOT modified
+--  m
+function place_compass(x,y,z, area,data, material, distance)
+	place_material(x+distance,y,z, area,data, material)
+	place_material(x-distance,y,z, area,data, material)
+	place_material(x,y,z+distance, area,data, material)
+	place_material(x,y,z-distance, area,data, material)
+end--place_compass
+
+-- mmm
+-- mxm x=location xyz which is NOT modified
+-- mmm
+function place_surround(x,y,z, area, data, material)
+	for j=-1,1 do
+		for k=-1,1 do
+			if j~=0 or k~=0 then
+				place_material(x+j,y,z+k, area,data, material)
+			end --if j
+		end --for k
+	end --for j
+end--place_four_around
+
+
+
+function gen_pinetree(x, y, z, area, data)
+	local vi
+	for j = -1, 6 do
+		place_material(x,y+j,z, area,data, c_ptree)
+		if j==2 or j==4 or j==6 then 
+			place_compass(x,y+j,z, area,data, c_pleaves, 1)
+		end --if j 2 4 or 6
+		if j==3 then
+			place_surround(x,y+j,z, area,data, c_pleaves)
+			for i=-1,1 do 
+				place_material(x+i,y+j,z-2, area,data, c_pleaves)
+				place_material(x+i,y+j,z+2, area,data, c_pleaves)
+			end --for i
+			for k=-1,1 do
+				place_material(x+2,y+j,z+k, area,data, c_pleaves)
+				place_material(x-2,y+j,z+k, area,data, c_pleaves)
+			end --for k
+		place_compass(x,y+j,z, area,data, c_pleaves, 3)
+		end --if j=3
+		if j==5 then
+			place_surround(x,y+j,z, area,data, c_pleaves) 
+			place_compass(x,y+j,z, area,data, c_pleaves, 2)
+		end --if j==5
+	end--for j
+	place_material(x,y+7,z, area,data, c_pleaves)
+end--gen_pinetree
+
+
 local biome={}
 biome[biomes.ARCTIC]={}
-biome[biomes.ARCTIC].under=c_snow
+biome[biomes.ARCTIC].under=c_ice
 biome[biomes.ARCTIC].tree=nil
 biome[biomes.ARCTIC].treechance=0  --treechance is in a thousand
 
 biome[biomes.COLD]={}
 biome[biomes.COLD].under=c_dirt_snow
-biome[biomes.COLD].tree=nil
-biome[biomes.COLD].treechance=0
+biome[biomes.COLD].tree=gen_pinetree
+biome[biomes.COLD].treechance=15
 
 biome[biomes.WARM]={}
 biome[biomes.WARM].under=c_grass
@@ -114,7 +173,7 @@ biome[biomes.WARM].treechance=5
 biome[biomes.HOT]={}
 biome[biomes.HOT].under=c_dirt_rainforest
 biome[biomes.HOT].tree=gen_jungletree
-biome[biomes.HOT].treechance=60
+biome[biomes.HOT].treechance=50
 
 biome[biomes.DESERT]={}
 biome[biomes.DESERT].under=c_desert_sand
@@ -145,34 +204,36 @@ end --get_biome
 --********************************
 function gen_bg_basic_biomes(parms)
 	--we dont check for overlap because this will ONLY be called where there is an overlap
-	local t1 = os.clock()
-	--minetest.log("gen_bg_basic_biomes top isect minp="..luautils.pos_to_str(parms.isect_minp).." maxp="..luautils.pos_to_str(parms.isect_maxp))
-
-	--get noise details
-	local isectsize = luautils.box_sizexz(parms.isect_minp,parms.isect_maxp)
-	local minposxz = {x=parms.isect_minp.x, y=parms.isect_minp.z}
-
-	nvals_heat = minetest.get_perlin_map(np_heat, isectsize):get_2d_map_flat(minposxz)
-
-	local nixz=1
-	for z=parms.isect_minp.z, parms.isect_maxp.z do
-		for x=parms.isect_minp.x, parms.isect_maxp.x do
-			local bi=get_biome(nixz)
-			local top=parms.share.surface[z][x]
-			local vi = parms.area:index(x, top, z) -- This accesses the node at a given position
-			parms.data[vi]=biome[bi].under
-			if math.random(1000)<=biome[bi].treechance then biome[bi].tree(x,top+1,z,parms.area,parms.data) end 
-			nixz=nixz+1
-		end --for x
-	end --for z
---store dirttop in parms.share so it can be passed to a decoration/biome generator
-parms.share.surface=dirttop
-
-
-	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
-	minetest.log("gen_bg_basic_biomes-> END isect="..luautils.pos_to_str(parms.isect_minp).." - "..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
+	--but we DO need to check if a surface map was sent
+	if parms.share.surface~=nil then
+		local t1 = os.clock()
+		--minetest.log("gen_bg_basic_biomes top isect minp="..luautils.pos_to_str(parms.isect_minp).." maxp="..luautils.pos_to_str(parms.isect_maxp))
+	
+		--get noise details
+		local isectsize = luautils.box_sizexz(parms.isect_minp,parms.isect_maxp)
+		local minposxz = {x=parms.isect_minp.x, y=parms.isect_minp.z}
+	
+		nvals_heat = minetest.get_perlin_map(np_heat, isectsize):get_2d_map_flat(minposxz)
+	
+		local nixz=1
+		for z=parms.isect_minp.z, parms.isect_maxp.z do
+			for x=parms.isect_minp.x, parms.isect_maxp.x do
+				local bi=get_biome(nixz)
+				local top=parms.share.surface[z][x]
+				local vi = parms.area:index(x, top, z) -- This accesses the node at a given position
+				parms.data[vi]=biome[bi].under
+				if math.random(1000)<=biome[bi].treechance then biome[bi].tree(x,top+1,z,parms.area,parms.data) end 
+				nixz=nixz+1
+			end --for x
+		end --for z
+	--store dirttop in parms.share so it can be passed to a decoration/biome generator
+	parms.share.surface=dirttop
+	
+		local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
+		minetest.log("gen_bg_basic_biomes-> END isect="..luautils.pos_to_str(parms.isect_minp).." - "..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
+	end --if parms.share.surface
 end -- gen_very_simple
-
+	
 realms.register_rmg("bg_basic_biomes",gen_bg_basic_biomes)
 
 

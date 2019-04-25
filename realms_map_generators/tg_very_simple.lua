@@ -49,18 +49,24 @@ function gen_tg_very_simple(parms)
 	local noisebot = minetest.get_perlin_map(np_ground_bot, isectsize):get_2d_map_flat(minposxz)	
 	local dirttop={}
 	local dirtbot={}
+	local surface_in_this_chunk=false
 	local nixz=1
 	for z=parms.isect_minp.z, parms.isect_maxp.z do
 		dirttop[z]={}
 		dirtbot[z]={}
 		for x=parms.isect_minp.x, parms.isect_maxp.x do
 			dirttop[z][x]=math.floor(parms.surfacey+(30*noisetop[nixz]))
+			if luautils.xyz_in_box(x,dirttop[z][x],z, parms.chunk_minp,parms.chunk_maxp) then
+				surface_in_this_chunk=true
+			end --if 
 			dirtbot[z][x]=dirttop[z][x]-math.floor(math.abs(20*noisebot[nixz]))
 			nixz=nixz+1
 		end --for x
 	end --for z
 --store dirttop in parms.share so it can be passed to a decoration/biome generator
-parms.share.surface=dirttop
+if surface_in_this_chunk==true then parms.share.surface=dirttop
+else parms.share.surface=nil
+end --if surface
 
 --here is where we actually do the work of generating the landscape.
 --we loop through as z,y,x because that is way the voxel info is stored, so it is most efficent.
