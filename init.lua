@@ -129,9 +129,10 @@ function gen_realms(chunk_minp, chunk_maxp, seed)
 	
 end -- gen_realms
 
-dofile(minetest.get_modpath("realms").."/realms_map_generators/layer_barrier.lua")
-dofile(minetest.get_modpath("realms").."/realms_map_generators/flatland.lua")
-dofile(minetest.get_modpath("realms").."/realms_map_generators/very_simple.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_layer_barrier.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_flatland.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_very_simple.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/bg_basic_biomes.lua")
 
 minetest.register_on_generated(gen_realms)
 read_realms_config()

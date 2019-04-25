@@ -1,11 +1,11 @@
-dofile(minetest.get_modpath("realms").."/realms_map_generators/layer_barrier_nodes.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_layer_barrier_nodes.lua")
 local c_layerbarrier = minetest.get_content_id("realms:layer_barrier")
 local c_bedrock = minetest.get_content_id("realms:bedrock")
 
 
 --********************************
 --function gen_layer_barrier(realm_minp,realm_maxp,surfacey, chunk_minp,chunk_maxp,seed)
-function gen_layer_barrier(parms)
+function gen_tg_layer_barrier(parms)
 	--we dont need to check overlap because realms does that for us and passes us our intersect in isect_minp,isect_maxp
 	local t1 = os.clock()
 
@@ -22,7 +22,7 @@ function gen_layer_barrier(parms)
 	end --for y
 
 	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
-	minetest.log("rmg layer_barrier-> END chunk="..luautils.pos_to_str(parms.isect_minp).." - "..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
+	minetest.log("tg_layer_barrier-> END chunk="..luautils.pos_to_str(parms.isect_minp).." - "..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
 end -- gen_layer_barrier
 
-realms.register_rmg("layer_barrier",gen_layer_barrier)
+realms.register_rmg("tg_layer_barrier",gen_tg_layer_barrier)
