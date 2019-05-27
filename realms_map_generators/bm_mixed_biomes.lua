@@ -1,7 +1,7 @@
 bm_mixed_biomes={}
 
 bm_mixed_biomes.name="bm basic biomes"
-bm_mixed_biomes.make_ocean_sand=true
+--bm_mixed_biomes.make_ocean_sand=true
 
 bm_mixed_biomes.typ="MATRIX"
 bm_mixed_biomes.heatrange=5
@@ -25,14 +25,6 @@ bm_mixed_biomes.biome={
 	} --+hot
 
 
---		{golden  , golden  , golden    , golden  ,golden  },
---		{golden  , golden  , godlen    , golden  ,golden  },
---		{rainbow , rainbow , rainbow   , rainbow ,rainbow },
---		{rainbow , rainbow , rainbow   , rainbow ,rainbow },
-
-
-
-
 --[[
 bm_mixed_biomes.type="VORONOI"
 bm_mixed_biomes.list={
@@ -47,6 +39,7 @@ bm_mixed_biomes.list={
 	}
 --]]
 
+realms.register_biomemap(bm_mixed_biomes)
 
 --********************************
 function bm_mixed_biomes.bm_mixed_biomes(parms)

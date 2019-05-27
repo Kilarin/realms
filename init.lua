@@ -301,7 +301,7 @@ end --realms.voronoi_sort
 realms.vboxsz=20
 --********************************
 function realms.register_biomemap(biomemap)
-	--minetest.log("realms.register_biomemap "..biomemap.name)
+	minetest.log("realms.register_biomemap "..biomemap.name.." ["..biomemap.typ.."]")
 	if realms.biomemap[biomemap.name]~=nil then
 		minetest.log("realms.register_biomemap-> ***WARNING!!!*** duplicate biome map being registered!  biomemap.name="..biomemap.name)
 	end
@@ -354,7 +354,33 @@ function realms.register_biomemap(biomemap)
 			minetest.log("voronoi analysis-> "..c.." : "..v.biome.name)
 			v.biome.count=nil
 		end
-	end --if voronoi
+	elseif biomemap.typ=="MATRIX" then
+		--convert alternates from strings to direct links to the biomes
+		--we could do this in register biome, but doing it here means we dont have to worry
+		--about the order of the biomes
+		--the reason for this?  With a voronoi map, if one biome is unavailble because of y_min/y_max restrictions
+		--you just take the next closest distance heat/humidity point.  BUT, with a matrix type of biome map,
+		--you can NOT have an empty spot on the matrix.  So we provide a list of alternate biomes if we provide
+		--a y_min/y_max.  
+		--this ends up working almost identical to the voronoi map because what is usually done with the voronoi
+		--is to provide alternate biomes with the exact same heat/humidity point and different y_min/y_max limits
+		minetest.log("realms.register_biomemap-> starting alternate scan for "..biomemap.name)
+		--biomemap.biome is a table in the form of biomemap.biome[heat][humid]
+		for i1,v1 in ipairs(biomemap.biome) do --loop through biomemap.biome[heat] 
+			minetest.log("  heat index["..i1.."]")
+			for i2,v2 in ipairs(v1) do --loop through biomemap.biome[heat][humid] (this gives us the actual biome)
+				minetest.log("    humid index["..i2.."] "..v2.name)
+				--only proceed if alternates exists, and if it is a list of strings (has not already been converted into actual biome links)
+				if v2.alternates~=nil and type(v2.alternates[1])=="string" then
+					for i3,v3 in ipairs(v2.alternates) do --loop through biomemap[heat][humid].alternates
+						biomemap.biome[i1][i2].alternates[i3]=realms.biome[v3] --turn string name into actual biome
+						minetest.log("      "..v2.name..".alternates["..i3.."]="..biomemap.biome[i1][i2].alternates[i3].name)
+					end --for i3,v3
+				end --if v2.alternates
+			end --for i2,v2
+		end --for i1,v1
+						
+	end --if biomemap.typ
 	minetest.log("realms-> biomemap registered for: "..biomemap.name)
 end --register_biomemap
 
@@ -474,7 +500,7 @@ end -- gen_realms
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_layer_barrier.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_flatland.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_very_simple.lua")
-dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_with_mountains.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_2dMap.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bg_basic_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bf_basic_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_caves.lua")

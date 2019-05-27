@@ -64,21 +64,52 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 	local filler_noise= minetest.get_perlin_map(np_filler_dep, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
 	local top_noise=minetest.get_perlin_map(np_top_dep, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
 	--*!* consider for future, why have this as two steps?  realms.get_noise2d should return the 2d_map_flat (pass it parms)
+	
+	--if user set flag make_ocean_sand=true in the biomemap, then we ignore biomes below sea level
+	--and just make everything into sand.  Its not very versatile, but it makes setting up simple biomes easy
 	if biomemap.make_ocean_sand==true then parms.share.make_ocean_sand=true end
+
 	
 	local nixz=1
 	for z=parms.isect_minp.z, parms.isect_maxp.z do
 		for x=parms.isect_minp.x, parms.isect_maxp.x do
-			--this function uses a 2d array for biomes instead of voronoi mapping because
-			--1: it might make it easier to distribute biomes easily
-			--2: voronoi mapping is complex, (unless you just do brute force)  this is lazier.
-			--need to implement voronoi version later
+			--compy is the y value we will be comparing y_min and y_max to
+			--the minetest wiki says: Limits are relative to y = water_level - 1
+			local y=parms.share.surface[z][x].top
+			local compy=y-parms.sealevel-1
+			
 			local biome
 			if biomemap.typ=="MATRIX" then
+			--MATRIX uses a 2d array for biomes instead of voronoi mapping because
+			--it might make it easier to control the distribution of biomes
+			--the 2d noise (x=heat z=humidity) maps directly to the matrix and determines which biome you are in
+			--you will notice that because of the cheating way I implemented VORONOI, these two different biomemap 
+			--types end up working almost the same way.
 				local n_heat = math.floor(math.abs(heat_map[nixz])*biomemap.heatrange)+1
 				local n_humid = math.floor(math.abs(humid_map[nixz])*biomemap.humidrange)+1
-				biome=biomemap.biome[n_heat][n_humid]
+				biome=biomemap.biome[n_heat][n_humid] --set to the primary biome, will change later if y_min/y_max dont fit
+
+				--now we have determined which matrix box we are in, we need to check the y_min/y_max limits
+				--if the primary does not match our y range, loop through the alternates until we find one that does
+				if biome.alternates~=nil and (compy<biome.y_min or compy>biome.y_max) then
+					local i=1
+					while ( compy<biome.alternates[i].y_min or compy>biome.alternates[i].y_max )
+							and i<#biome.alternates do 
+						i=i+1 
+					end--while
+				--if it doesnt match anything, you did something very wrong with your biomes
+				--but we will just pick up the last item in the list
+				biome=biome.alternates[i]
+				end--if compy
+
 			elseif biomemap.typ=="VORONOI" then
+				--VORONOI gives each biome a heat/humidity point (set in biomemap, NOT in biome definition!)
+				--the biome chosen is whichever one has a heat/humidity point that is the closest distance to 
+				--our 2d noise (x=heat z=humidity)
+				--BUT, recalculating the distance to all the biomes is SLOW, so I've cheated and when you 
+				--register_biomemap it builds a matrix and pre-calculates the distance to each biome from the
+				--center of each matrix box.  Its not a bad estimate of a true voronoi, and it pretty fast.
+				--
 				--get the noise
 				local n_heat = math.abs(heat_map[nixz])
 				local n_humid = math.abs(humid_map[nixz])
@@ -86,9 +117,6 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 				local vx=math.floor(n_heat*realms.vboxsz)
 				local vz=math.floor(n_humid*realms.vboxsz)
 				local voronoi=biomemap.voronoi[vx][vz]
-				--the minetest wiki says: Limits are relative to y = water_level - 1
-				local y=parms.share.surface[z][x].top
-				local compy=y-parms.sealevel-1
 				--now we have determined which vbox we are in, and we have the list of biomes
 				--sorted by distance from the center of that vbox.  We need to find the first
 				--one that is in our y range
@@ -99,12 +127,16 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 				biome=voronoi[i]
 				--minetest.log("map_biome_to_surface-> "..luautils.pos_to_str_xyz(x,y,z).." compy="..compy.." vx="..vx.." vz="..vz.." biome="..biome.name.." i="..i)
 			end --if biomemap.typ
+			
 			parms.share.surface[z][x].biome=biome
+
+			--I like these depths to have a bit of variation in them:
 			if biome.node_water_top~=nil then
 				parms.share.surface[z][x].water_top_depth=realms.randomize_depth(biome.depth_water_top,0.33,top_noise[nixz])
 			end --water_top
 			parms.share.surface[z][x].top_depth=realms.randomize_depth(biome.depth_top,0.33,top_noise[nixz])
 			parms.share.surface[z][x].filler_depth=realms.randomize_depth(biome.depth_filler,0.33,filler_noise[nixz])
+			
 			--minetest.log("bf_generic.map_biome_to_surface->    n_heat="..n_heat.." n_humid="..n_humid.." biome="..biome.name)
 			nixz=nixz+1
 		end --for x

@@ -1,4 +1,4 @@
-tg_with_mountains={}
+tg_2dMap={}
 
 local c_stone = minetest.get_content_id("default:stone")
 local c_dirt = minetest.get_content_id("default:dirt")
@@ -46,7 +46,7 @@ realms.register_noise("Map2dCan01",{
 
 
 --********************************
-function tg_with_mountains.gen_tg_with_mountains(parms)
+function tg_2dMap.gen_tg_2dMap(parms)
 	--we dont check for overlap because this will ONLY be called where there is an overlap
 	local t1 = os.clock()
 
@@ -163,7 +163,7 @@ function tg_with_mountains.gen_tg_with_mountains(parms)
 	parms.share.surface=surface --got to share it so the biomefunc can update it
 	if parms.biomefunc~=nil then realms.rmf[parms.biomefunc](parms) end
 	surface=parms.share.surface  --just in case the bf (biome func) replaced it
-	--minetest.log("tg_with_mountains-> surface["..z.."]["..x.."].biome.node_top="..surface[z][x].biome.node_top.."   name="..surface[z][x].biome.name)
+	--minetest.log("tg_2dMap-> surface["..z.."]["..x.."].biome.node_top="..surface[z][x].biome.node_top.."   name="..surface[z][x].biome.name)
 
 --here is where we actually do the work of generating the landscape.
 --we loop through as z,y,x because that is way the voxel info is stored, so it is most efficent.
@@ -198,7 +198,7 @@ function tg_with_mountains.gen_tg_with_mountains(parms)
 
 				--if this is the top, set top node (biome based) and ALSO call the decorate function (if it exists)
 				elseif y==sfc.top then
-					--minetest.log("tg_with_mountains->TOP surface["..z.."]["..x.."].biome.node_top="..biome.node_top.."   name="..biome.name)
+					--minetest.log("tg_2dMap->TOP surface["..z.."]["..x.."].biome.node_top="..biome.node_top.."   name="..biome.name)
 					luautils.place_node(x,y,z, parms.area, parms.data, biome.node_top)
 					if biome.decorate~=nil then biome.decorate(x,y+1,z, biome, parms) end
 
@@ -232,10 +232,10 @@ function tg_with_mountains.gen_tg_with_mountains(parms)
 	nmhi=luautils.round_digits(nmhi,3)
 	nclo=luautils.round_digits(nclo,3)
 	nchi=luautils.round_digits(nchi,3)
-	minetest.log("gen_tg_with_mountains-> END isect="..luautils.pos_to_str(parms.isect_minp).."-"..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
+	minetest.log("gen_tg_2dMap-> END isect="..luautils.pos_to_str(parms.isect_minp).."-"..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
 	minetest.log("   noise-> ntlo="..ntlo.." nthi="..nthi.." : nmlo="..nmlo.." nmhi="..nmhi.." : nclo="..nclo.." nchi="..nchi) --*!*debugging
 end -- gen_with_mountains
 
-realms.register_mapgen("tg_with_mountains",tg_with_mountains.gen_tg_with_mountains)
+realms.register_mapgen("tg_2dMap",tg_2dMap.gen_tg_2dMap)
 
 

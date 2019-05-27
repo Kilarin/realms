@@ -1,6 +1,7 @@
 bd_default_biomes={}
 
 upper_limit=33000
+ocean_bottom=-800
 
 
 --this is just the default biomes from minetest game converted to realms biomes
@@ -38,7 +39,7 @@ realms.register_biome({
 		node_water_top = "default:ice",
 		depth_water_top = 10,
 		y_max = -9,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 0,
 		--humidity_point = 73,
 	})
@@ -105,7 +106,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = -4,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 0,
 		--humidity_point = 40,
 	})
@@ -145,7 +146,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 25,
 		--humidity_point = 70,
 	})
@@ -182,7 +183,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 20,
 		--humidity_point = 35,
 	})
@@ -241,7 +242,7 @@ realms.register_biome({
 		node_riverbed = "default:sand",
 		depth_riverbed = 2,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 50,
 		--humidity_point = 35,
 	})
@@ -299,7 +300,7 @@ realms.register_biome({
 		node_riverbed = "default:sand",
 		depth_riverbed = 2,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 45,
 		--humidity_point = 70,
 	})
@@ -331,7 +332,6 @@ realms.register_biome({
 			}
 	})
 
---this one looks goofy until I get the ymin/ymax and voronoi coded
 	realms.register_biome({
 		name = "default_deciduous_forest_shore",
 		node_top = "default:dirt",
@@ -356,7 +356,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = -2,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 60,
 		--humidity_point = 68,
 	})
@@ -394,7 +394,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 92,
 		--humidity_point = 16,
 	})
@@ -429,7 +429,7 @@ realms.register_biome({
 		node_riverbed = "default:sand",
 		depth_riverbed = 2,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 60,
 		--humidity_point = 0,
 	})
@@ -463,7 +463,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = 3,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 40,
 		--humidity_point = 0,
 	})
@@ -519,7 +519,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = -2,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 89,
 		--humidity_point = 42,
 	})
@@ -576,7 +576,7 @@ realms.register_biome({
 		depth_riverbed = 2,
 		vertical_blend = 1,
 		y_max = -2,
-		y_min = -112,
+		y_min = ocean_bottom,
 		--heat_point = 86,
 		--humidity_point = 65,
 	})
