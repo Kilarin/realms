@@ -105,6 +105,11 @@ realms.register_biome({
 		depth_filler = 3,
 		y_max = -2,
 		y_min = ocean_bottom,
+--		dec={
+--			{chance=0.5,schematic = minetest.get_modpath("default") .. "/schematics/corals.mts",y_max = -2,y_min = -8}, --ymin/ymax for decorations not implmented yet
+--			{chance=0.5,node="default:sand_with_kelp",y_max = -5,y_min = -10},
+--			}
+--coral looks goofy without the y limits, and kelp just isn't working for some reason
 	})
 
 
