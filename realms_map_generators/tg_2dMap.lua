@@ -1,3 +1,43 @@
+--tg_2dMap tg_=Terrain Generator
+--This Terrain Generator uses 2d Noise to generate Terrain.  
+--possible paramaters:
+--height_base=#   
+--   The height_base is the base value the noise manipulates to generate the terrain, so higher 
+--   values generate taller and deeper features.  It defaults to 30 if you do not include it in 
+--   realms.conf
+--sea_percent=#
+--   This sets aproximately what percentage of the world will be below sea level.  The landscape 
+--   is actually shifted up (or down) to accomplish this.  It defaults to 25% if you do not include 
+--   it in realms.conf
+--extremes  or extremes=#
+--   this turns on (and optionaly sets the multiplier for) extremes in the terrain.  It creates 
+--   regions of tall mountains and flatter plains.  The value defaults to 4 if you just set it as a 
+--   flag |extremes| but you can specify a value like |extremes=5|
+--   when extremes are on, the generator uses a second layer of 2d noise and the surface calculation
+--   is multiplied by extval*(noise_ext^2)
+--canyons
+--   passing this flag in realms.conf will cause to terrain generator to use another layer of
+--   2d noise to generate "canyons"  They aren't very canyon like yet, but do create some
+--   interesting terrain
+--
+--tg_2dMap takes a biome function as a paramater as well.  
+
+
+---tg_2dMap         |-33000| 15000|-33000| 33000| 16500| 33000|   16000|bm_default_biomes|height_base=60|sea_percent=35|extremes=5|canyons
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 tg_2dMap={}
 
 local c_stone = minetest.get_content_id("default:stone")
@@ -58,6 +98,12 @@ function tg_2dMap.gen_tg_2dMap(parms)
 	sea_percent=sea_percent/100
 
 
+	--NOTE: our default_seed is the realm_seed, so that each realm will have unique noise.
+	--If you want two different realm entries to use the same noise, you must set parms.seed
+	local noisetop = realms.get_noise2d(parms.noisetop,"Map2dTop01",parms.seed,parms.realm_seed, parms.isectsize2d,parms.minposxz)
+	local noiseext = realms.get_noise2d(parms.noiseext,"Map2dExt01",parms.seed,parms.realm_seed, parms.isectsize2d,parms.minposxz)
+	local noisecan = realms.get_noise2d(parms.noisecan,"Map2dCan01",parms.seed,parms.realm_seed, parms.isectsize2d,parms.minposxz)
+	--*!* should modify this to look for noisename_seed
 
 	--we calculate the surface top and bot first
 	--because we need to loop through the voxels in z,y,x order for efficency
@@ -66,50 +112,14 @@ function tg_2dMap.gen_tg_2dMap(parms)
 	--we load our perlin noise as flat because, well, quite frankly, because
 	--everyone else does it that way, so I assume it's more efficent.  So instead of
 	--and x,z array, we have one array that goes from 1 to isectsize2d.x*isectsize2d.y
-	--one noise determines our dirt top, the other the dirt bot, so they will be different
+	--we determine surface[x][z].top here.  surface[x][z].bot and other stuff generally processed in biome
 	
-	--NOTE: we pass the realm_seed, so that each realm will have unique noise.
-	--If you want two different realm entries to use the same noise, you must set the seed parameter.
-	local seed=parms.seed
-	if seed==nil then seed=parms.realm_seed end
-	local np_ground_top=realms.get_noise(parms.noisetop,"Map2dTop01",seed)
-	local np_extremes=realms.get_noise(parms.noiseext,"Map2dExt01",seed)
-	local np_canyons=realms.get_noise(parms.noisecan,"Map2dCan01",seed)
-
-	
-	--local np_ground_top=realms.get_noise(parms.noisetop,"Map2dTop01")
-	--local np_ground_bot=realms.get_noise(parms.noisebot,"Map2dBot01")
-	--local np_extremes=realms.get_noise(parms.noiseext,"Map2dExt01")
-	--local np_canyons=realms.get_noise(parms.noisecan,"Map2dCan01")
-	
-	local noisetop = minetest.get_perlin_map(np_ground_top, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
-	--local noisebot = minetest.get_perlin_map(np_ground_bot, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
-	local noiseext = minetest.get_perlin_map(np_extremes, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
-	local noiseCan = minetest.get_perlin_map(np_canyons, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
-	--local noiseDep = minetest.get_perlin_map(np_depth, parms.isectsize2d):get_2d_map_flat(parms.minposxz)
 	local surface = {}
-
-
-	--*!*debugging
-	local ntlo=999
-	local nthi=-999
-	local nmlo=999
-	local nmhi=-999
-	local nclo=999
-	local nchi=-999
 
 	local nixz=1
 	for z=parms.isect_minp.z, parms.isect_maxp.z do
 		surface[z]={}
 		for x=parms.isect_minp.x, parms.isect_maxp.x do
-
-			--*!*debugging
-			if noisetop[nixz]>nthi then nthi=noisetop[nixz] end
-			if noisetop[nixz]<ntlo then ntlo=noisetop[nixz] end
-			if noiseext[nixz]>nmhi then nmhi=noiseext[nixz] end
-			if noiseext[nixz]<nmlo then nmlo=noiseext[nixz] end
-			if noiseCan[nixz]>nchi then nchi=noiseCan[nixz] end
-			if noiseCan[nixz]<nclo then nclo=noiseCan[nixz] end
 
 			--we are going to set the surface level based on noise (noise should be -1 to +1 but might be -2 to +2)
 			--dirt_height is the value for how high the terrain should be at this point.
@@ -126,10 +136,10 @@ function tg_2dMap.gen_tg_2dMap(parms)
 			--this creates a multiplier that creates plains and valleys by multiplying the base by another layer of noise
 			local mult=1
 			if parms.extremes~=nil then
-				local ext=parms.extremes
-				if type(ext)~="number" then ext=4 end
-				local nm=noiseext[nixz]
-				mult=ext*(nm^2)
+				local extval=parms.extremes
+				if type(extval)~="number" then extval=4 end
+				local noise_ext=noiseext[nixz]
+				mult=extval*(noise_ext^2)
 			end --if parms.plains
 
 
@@ -140,7 +150,7 @@ function tg_2dMap.gen_tg_2dMap(parms)
 			if parms.canyons==true then
 				--BUT, now we are going to try and add canyons.
 				--this does NOT make great canyons, but it does make sorta canyons, and interesting terrain.  And odd small deep holes.
-				local can=noiseCan[nixz]
+				local can=noisecan[nixz]
 				local edge=0.5 --change this to play with different canyon shapes
 				if can<edge and surface[z][x].top>parms.sealevel then --make a canyon/river
 					local t=surface[z][x].top --just to make this more readable
@@ -226,14 +236,7 @@ function tg_2dMap.gen_tg_2dMap(parms)
 
 
 	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
-	ntlo=luautils.round_digits(ntlo,3)
-	nthi=luautils.round_digits(nthi,3)
-	nmlo=luautils.round_digits(nmlo,3)
-	nmhi=luautils.round_digits(nmhi,3)
-	nclo=luautils.round_digits(nclo,3)
-	nchi=luautils.round_digits(nchi,3)
 	minetest.log("gen_tg_2dMap-> END isect="..luautils.pos_to_str(parms.isect_minp).."-"..luautils.pos_to_str(parms.isect_maxp).."  "..chugent.." ms") --tell people how long
-	minetest.log("   noise-> ntlo="..ntlo.." nthi="..nthi.." : nmlo="..nmlo.." nmhi="..nmhi.." : nclo="..nclo.." nchi="..nchi) --*!*debugging
 end -- gen_with_mountains
 
 realms.register_mapgen("tg_2dMap",tg_2dMap.gen_tg_2dMap)

@@ -66,25 +66,56 @@ end --register_noise
 
 
 --call this function passing a noise parameter (usually parms.noisename)
---and a default noise name.  The function will return the default noise if parm_noise is blank.
+--call this function passing a noisename_in (the name of a registered noise, usually parms.noisename)
+--and a default noise name.  The function will return the default noise if noisename_in is blank.
 --if you pass seed, the noise.seed will be set to that
+--if seed is nil and default_seed is not, it will use default_seed (usualy pass parms.realm_seed)
+--if default_seed is nill, it will not change the seed.
+--NOTE: we add the seed you pass to nameseed, a unique seed based on the noise name.  that way you get
+--unique seeds for each noise even when passing the same realm_seed
+--
 --this just makes it simpler and more intuitive to get your noise
+--it is usually better to use realms.get_noise2d or realms.get_noise3d
 --********************************
-function realms.get_noise(noisename_in, default_noise, seed)
+function realms.get_noise(noisename_in, default_noise, seed, default_seed)
 	local noisename
-	--if parm_noise~=nil and parm_noise~="" then noisename=parms.noisetop
-	if parm_noise~=nil and parm_noise~="" then noisename=parms_noise
+	if noisename_in~=nil and noisename_in~="" then noisename=noisename_in
 	else noisename=default_noise
-	end --if parm_noise
-	--minetest.log("realms.init-> noisename="..noisename)
+	end --if noisename_in
 	local noise=realms.noise[noisename]
 	if seed~=nil then
-		--minetest.log("get_noise-> bfr "..noisename.." seed="..noise.seed)
 		noise.seed=noise.nameseed+tonumber(seed)
-		--minetest.log("get_noise-> aft "..noisename.." seed="..noise.seed)
+	elseif default_seed~=nil then
+		noise.seed=noise.nameseed+tonumber(default_seed)
 	end --if seed
 	return noise
 end --get_noise
+
+
+--note that this just saves the step of you getting the perlin map and lets you do it all in one step
+--see get_noise for details on that function
+--noisename_in=the name of a registered noise, usually parms.noisename
+--default_noise=the name of a registered noise to use if noisename_in is nil
+--seed=a seed to add to nameseed for this noise (usually parms.seed)
+--default_seed=a seed to use if seed=nil (usually parms.realm_seed)
+--size2d=the size of the map, (usually parms.isectsize2d)
+--minposxz=the min position, (usually parms.minposxz)
+--this function will return the noise map
+--********************************
+function realms.get_noise2d(noisename_in, default_noise, seed, default_seed, size2d, minposxz)
+	local noise=realms.get_noise(noisename_in, default_noise, seed, default_seed)
+	local noisemap = minetest.get_perlin_map(noise, size2d):get_2d_map_flat(minposxz)
+	return noisemap
+end --get_noise2d
+
+
+--same as get_noise2d but for 3d noise
+--********************************
+function realms.get_noise3d(noisename_in, default_noise, seed, default_seed, size3d, minpos)
+	local noise=realms.get_noise(noisename_in, default_noise, seed, default_seed)
+	local noisemap = minetest.get_perlin_map(noise, size3d):get_3d_map_flat(minposxz)
+	return noisemap
+end --get_noise2d
 
 
 --********************************
