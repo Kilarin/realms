@@ -71,10 +71,6 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 	local filler_noise= realms.get_noise2d(parms.noisefil  ,"FillerDep01" ,parms.seed,parms.realm_seed, parms.isectsize2d,parms.minposxz)
 	local top_noise   = realms.get_noise2d(parms.noisetop  ,"TopDep01"    ,parms.seed,parms.realm_seed, parms.isectsize2d,parms.minposxz)
 
-	--if user set flag make_ocean_sand=true in the biomemap, then we ignore biomes below sea level
-	--and just make everything into sand.  Its not very versatile, but it makes setting up simple biomes easy
-	if biomemap.make_ocean_sand==true then parms.share.make_ocean_sand=true end
-
 	local nixz=1
 	for z=parms.isect_minp.z, parms.isect_maxp.z do
 		for x=parms.isect_minp.x, parms.isect_maxp.x do
@@ -134,6 +130,12 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 			end --if biomemap.typ
 
 			parms.share.surface[z][x].biome=biome
+			
+			--if user set flag make_ocean_sand=true in the biomemap, then we ignore biomes below sea level
+			--and just make everything into sand.  Its not very versatile, but it makes setting up simple biomes easy
+			if biomemap.make_ocean_sand==true and parms.share.surface[z][x].top<=parms.sealevel then
+				parms.share.surface[z][x].biome=realms.undefined_underwater_biome
+			end --if make_ocean_sand
 
 			--I like these depths to have a bit of variation in them:
 			if biome.node_water_top~=nil then
@@ -146,10 +148,14 @@ function bf_generic.map_biome_to_surface(parms,biomemap)
 			nixz=nixz+1
 		end --for x
 	end --for z
+
+
+	
+
 minetest.log("bf_generic.map_biome_to_surface-> "..luautils.pos_to_str(parms.isect_minp).." biome map="..biomemap.name.."   END")
 end --get_biome
 
 
---realms.register_mapfunc("bf_generic",bf_basic_biomes.bf_basic_biomes)
+
 
 

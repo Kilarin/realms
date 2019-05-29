@@ -5,13 +5,26 @@ local c_air = minetest.get_content_id("air")
 local c_stone = minetest.get_content_id("default:stone")
 local c_dirt = minetest.get_content_id("default:dirt")
 local c_dirt_grass = minetest.get_content_id("default:dirt_with_grass")
+local c_sand = minetest.get_content_id("default:sand")
 
-realms.dflt_biome={
-	name="Crystal",
-	node_top=c_dirt,
-	node_filler=c_dirt_grass,
+realms.undefined_biome={
+	name="undefined_biome",
+	node_top=c_dirt_grass,
+	depth_top = 1,
+	node_filler=c_dirt,
+	depth_filler = 5,
 	dec=nil
 	}
+
+realms.undefined_underwater_biome={
+	name="undefined_underwater_biome",
+	node_top=c_sand,
+	depth_top = 1,
+	node_filler=c_sand,
+	depth_filler = 1,
+	dec=nil
+	}
+
 
 --node_dust = "default:snow",
 --node_top = "default:dirt_with_snow",
@@ -123,6 +136,7 @@ function realms.read_realms_config()
 	minetest.log("realms-> reading realms config file")
 	realm.count=0
 	local p
+	local cmnt
 	--first we look to see if there is a realms.conf file in the world path
 	local file = io.open(minetest.get_worldpath().."/realms.conf", "r")
 	--if its not in the worldpath, try for the modpath
@@ -136,8 +150,11 @@ function realms.read_realms_config()
 	end --if file (worldpath)
 	if file then
 		for str in file:lines() do
+			str=luautils.trim(str)
+			cmnt=false
+			if string.len(str)>=2 and string.sub(str,1,2)=="--" then cmnt=true end
 			p=string.find(str,"|")
-			if p~=nil then --we found a vertical bar, this is an actual entry
+			if p~=nil and cmnt~=true then --not a comment, and we found a vertical bar, this is an actual entry
 				realm.count=realm.count+1
 				local r=realm.count
 				realm[r]={}
@@ -532,10 +549,11 @@ dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_layer_barrier.
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_flatland.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_very_simple.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_2dMap.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_shattered.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bg_basic_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bf_basic_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_caves.lua")
-dofile(minetest.get_modpath("realms").."/realms_map_generators/bf_odd_biomes.lua")
+--dofile(minetest.get_modpath("realms").."/realms_map_generators/bf_odd_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/tg_stupid_islands.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bf_generic.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bd_basic_biomes.lua")
@@ -544,6 +562,7 @@ dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_basic_biomes.l
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_mixed_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bd_default_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_default_biomes.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_shattered_biomes.lua")
 
 minetest.register_on_generated(realms.gen_realms)
 realms.read_realms_config()
