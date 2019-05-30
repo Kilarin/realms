@@ -12,6 +12,7 @@ realms.register_noise("Map2dHeat01",{
 	offset = 0,
 	scale = 1,
 	spread = {x=512, y=512, z=512},
+--spread = {x=128, y=128, z=128},
 	octaves = 1,
 	persist = 0.2,
 	seed = 928349
@@ -21,6 +22,7 @@ realms.register_noise("Map2dHeat01",{
 realms.register_noise("Map2dHumid01",{
 	offset = 0,
 	scale = 1,
+--spread = {x=256, y=256, z=256},
 	spread = {x=412, y=412, z=412},
 	octaves = 1,
 	persist = 0.3,

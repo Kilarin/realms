@@ -1,5 +1,5 @@
 bm_basic_biomes={}
-bm_basic_biomes.name="bm basic biomes"
+bm_basic_biomes.name="basic biomes map"
 --bm_basic_biomes.make_ocean_sand=true
 
 bm_basic_biomes.typ="MATRIX"

@@ -563,6 +563,7 @@ dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_mixed_biomes.l
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bd_default_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_default_biomes.lua")
 dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_shattered_biomes.lua")
+dofile(minetest.get_modpath("realms").."/realms_map_generators/bm_shattered2_biomes.lua")
 
 minetest.register_on_generated(realms.gen_realms)
 realms.read_realms_config()

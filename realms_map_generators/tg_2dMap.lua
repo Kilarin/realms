@@ -174,6 +174,7 @@ function tg_2dMap.gen_tg_2dMap(parms)
 				--BUT, now we are going to try and add canyons.
 				--this does NOT make great canyons, but it does make sorta canyons, and interesting terrain.  And odd small deep holes.
 				local can=noisecan[nixz]
+				--[ [
 				local edge=0.5 --change this to play with different canyon shapes
 				if can<edge and surface[z][x].top>parms.sealevel then --make a canyon/river
 					local t=surface[z][x].top --just to make this more readable
@@ -184,6 +185,8 @@ function tg_2dMap.gen_tg_2dMap(parms)
 					end--if can>=(edge-.05)
 					--minetest.log("***canyon-> x="..x.." z="..z.." was "..t.." now ".. surface[z][x].top)
 				end--if can<edge
+			--] ]
+			--if can>0.5 and can<0.6 then surface[z][x].top=parms.sealevel-3 end
 			end --if parms.canyons
 			
 			--the below will be overridden if you have a biomefunc
