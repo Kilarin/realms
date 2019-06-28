@@ -168,6 +168,8 @@ realms.register_biome({
 			{chance=5, node="default:grass_3"},
 			{chance=5, node="default:grass_4"},
 			{chance=5, node="default:grass_5"},
+			--{chance=5, node="moretrees:sequoia_trunk",  height=6, height_max=12},
+			{chance=0.25, lsystem="moretrees.sequoia_model"},
 			}
 		})
 
