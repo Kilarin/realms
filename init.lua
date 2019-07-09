@@ -139,17 +139,23 @@ function realms.read_realms_config()
 	realm.count=0
 	local p
 	local cmnt
-	--first we look to see if there is a realms.conf file in the world path
-	local file = io.open(minetest.get_worldpath().."/realms.conf", "r")
-	--if its not in the worldpath, try for the modpath
-	if file then
-		minetest.log("realms-> loading realms.config from worldpath:")
-	else
-		file = io.open(minetest.get_modpath("realms").."/realms.conf", "r")
-		if file then minetest.log("realms-> loading realms.conf from modpath")
-		else minetest.log("realms-> unable to find realms file in worldpath or modpath.  This is bad")
-		end --if file (modpath)
-	end --if file (worldpath)
+	--realms_configpathmod is set in minetest.conf in the games path, OR defaults to just realms
+	--this is the NAME of the mod where we will get the config file.  I would rather use the game path,
+	--but there is no way to get that in minetest.
+	local configpathmod=minetest.settings:get("realms_configpathmod") or "realms"
+	minetest.log("realms.read_realms_config -> configpathmod="..configpathmod)
+	--using the mod name from configpathmod, we now get the path
+	local configpath=minetest.get_modpath(configpathmod)
+	minetest.log("realms.read_realms_config -> configpath="..configpath)
+	--realms_config is set in minetest.conf in the game path, OR defaults to just realms.conf
+	local filename = minetest.settings:get("realms_config") or "realms.conf"
+	minetest.log("realms.read_realms_config -> filename="..filename)
+	--open the file so we can load the config
+	local file = io.open(configpath.."/"..filename, "r")
+	if file then minetest.log("realms.read_realms_config -> loading realms config file: <"..filename.."> from "..configpath)
+	else minetest.log("realms.read_realms_config -> ERROR!!! unable to find realms config file <"..filename.."> in "..configpath..".  This is bad")
+	end --if file (modpath)
+	
 	if file then
 		for str in file:lines() do
 			str=luautils.trim(str)
@@ -340,13 +346,72 @@ function realms.calc_biome_dec(biome)
 end --calc_biome_dec
 
 
+
+--********************************
+--untested, probably needs to be modified so you could add multiple decorations
 function realms.add_decoration(biome,newdec)
+	--minetest.log("add_decoration-> #newdec="..#newdec)
 	if biome.dec==nil then biome.dec=newdec
-	else biome.dec[#biome.dec+1]=newdec
+	else 
+		for _,v in pairs(newdec) do
+			table.insert(biome.dec, v)
+		end--for
+	--biome.dec[#biome.dec+1]=newdec
 	end --if
 	realms.calc_biome_dec(biome)
+	--minetest.log("  add_decoration -> #biome.dec="..#biome.dec)
 end --add_decoration
 
+
+
+
+--********************************
+function realms.add_dec_flowers(biomein,modifier,cat)
+	local biome
+	if type(biomein)=="string" then biome=realms.biome[biomein]
+	else biome=biomein
+	end --if type(biomein)
+	if modifer==nil or modifier==0 then modifier=1 end 
+	if flowers then --if the flowers mod is available
+		--the category parm may not be needed, since I'm just adding all flowers the same right now
+		if cat==nil or cat=="all" then  
+			realms.add_decoration(biome,
+				{
+					{chance=0.30*modifier, node="flowers:dandelion_yellow"},
+					{chance=0.30*modifier, node="flowers:dandelion_white"},
+					{chance=0.25*modifier, node="flowers:rose"},
+					{chance=0.25*modifier, node="flowers:tulip"},
+					{chance=0.20*modifier, node="flowers:chrysanthemum_green"},
+					{chance=0.20*modifier, node="flowers:geranium"},
+					{chance=0.20*modifier, node="flowers:viola"},
+					{chance=0.05*modifier, node="flowers:tulip_black"},
+				})
+		end --if cat==all
+	end --if flowers
+end --add_dec_flowers
+
+
+function realms.add_dec_mushrooms(biomein,modifier) --can add a cat to this later if needed
+	if type(biomein)=="string" then biome=realms.biome[biomein]
+	else biome=biomein
+	end --if type(biomein)
+	if modifer==nil or modifier==0 then modifier=1 end 
+	realms.add_decoration(biome,
+		{
+			{chance=0.05*modifier,node="realms:mushroom_white"},
+			{chance=0.01*modifier,node="realms:mushroom_milkcap"},
+			{chance=0.01*modifier,node="realms:mushroom_shaggy_mane"},
+			{chance=0.01*modifier,node="realms:mushroom_parasol"},
+			{chance=0.005*modifier,node="realms:mushroom_sulfer_tuft"},
+		})
+	if flowers then --if the flowers mod is available
+		realms.add_decoration(biome,
+			{
+				{chance=0.05*modifier, node="flowers:mushroom_brown"},
+				{chance=0.05*modifier, node="flowers:mushroom_red"},
+			})
+	end --if flowers
+end --add_dec_flowers
 
 
 --********************************
